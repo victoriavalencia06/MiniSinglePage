@@ -46,7 +46,7 @@ export default function ListCitas() {
       data.sort((a, b) => {
         const fechaA = a.fechaHora?.seconds || 0;
         const fechaB = b.fechaHora?.seconds || 0;
-        return fechaB - fechaA; // descendente
+        return fechaB - fechaA;
       });
 
       setCitas(data);
@@ -55,24 +55,23 @@ export default function ListCitas() {
     fetchCitas();
   }, []);
 
-  // color segun el estado de la cita
+  // color según el estado de la cita
   const getBadgeClass = (estado) => {
-  switch (estado?.toLowerCase()) {
-    case "pendiente":
-      return "bg-warning text-dark"; // Amarillo
-    case "confirmada":
-      return "bg-success"; // Verde
-    case "reprogramada":
-      return "bg-info text-dark"; // Celeste
-    case "cancelada":
-      return "bg-danger"; // Rojo
-    case "atendida":
-      return "bg-primary"; // Azul
-    default:
-      return "bg-secondary"; // Gris si algo falla
-  }
-};
-
+    switch (estado?.toLowerCase()) {
+      case "pendiente":
+        return "bg-warning text-dark"; // Amarillo
+      case "confirmada":
+        return "bg-success"; // Verde
+      case "reprogramada":
+        return "bg-info text-dark"; // Celeste
+      case "cancelada":
+        return "bg-danger"; // Rojo
+      case "atendida":
+        return "bg-primary"; // Azul
+      default:
+        return "bg-secondary"; // Gris si algo falla
+    }
+  };
 
   return (
     <div className="container my-4">

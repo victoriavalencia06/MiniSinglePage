@@ -33,7 +33,7 @@ export default function FormCitas() {
     direccion: "",
   });
 
-  // Fecha mínima en hora local (no UTC) para el input datetime-local
+  // Fecha mínima en hora local (no UTC)
   const nowLocalISO = (() => {
     const now = new Date();
     const tzOffsetMs = now.getTimezoneOffset() * 60000;
@@ -67,21 +67,15 @@ export default function FormCitas() {
     try {
       const doctoresCol = collection(db, "Doctor");
 
-      // 1) Intento por 'especializacionId' (string)
       let snap = await getDocs(query(doctoresCol, where("especializacionId", "==", id)));
-
-      // 2) Intento alterno por 'especialidadId' (string), por si el campo se guardó con ese nombre
       if (snap.empty) {
         snap = await getDocs(query(doctoresCol, where("especialidadId", "==", id)));
       }
-
-      // 3) Intento por referencia: 'especializacionRef' === doc(db,'Especializacion', id)
       if (snap.empty) {
         const ref = doc(db, "Especializacion", id);
         snap = await getDocs(query(doctoresCol, where("especializacionRef", "==", ref)));
       }
 
-      // 4) Fallback: traer todos y filtrar en memoria (por si hay espacios u otras claves)
       let docMatch = snap.docs[0];
       if (!docMatch) {
         const all = await getDocs(doctoresCol);
@@ -96,11 +90,9 @@ export default function FormCitas() {
         const data = docMatch.data();
         setDoctorAsignado({ id: docMatch.id, ...data });
         setDoctorId(docMatch.id);
-        console.log("Doctor asignado:", docMatch.id, data);
       } else {
         setDoctorAsignado(null);
         setDoctorId("");
-        console.warn("No se encontró doctor para especialización:", id);
       }
     } catch (error) {
       console.error("Error al buscar doctor:", error);
@@ -128,7 +120,6 @@ export default function FormCitas() {
       return;
     }
 
-    // Validar fecha futura (en local)
     const selected = new Date(fechaHora);
     const now = new Date();
     if (selected < now) {
@@ -136,7 +127,6 @@ export default function FormCitas() {
       return;
     }
 
-    // Verificar disponibilidad exacta fecha/hora con el mismo doctor
     const qCita = query(
       collection(db, "Citas"),
       where("doctorId", "==", doctorId),

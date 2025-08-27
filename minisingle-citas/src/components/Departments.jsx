@@ -2,105 +2,106 @@ import React, { useState } from 'react';
 
 const Departments = () => {
   const [activeDepartment, setActiveDepartment] = useState(null);
-  
+
   const departments = [
     {
       id: 0,
-      title: "Neumología",
-      description: "Nos especializamos en la salud pulmonar, brindando diagnóstico y tratamiento de enfermedades respiratorias.",
+      title: "Medicina General",
+      description: "Atención primaria de la salud para todas las edades, diagnóstico y tratamiento de enfermedades comunes.",
       services: [
-        "Electrocardiograma (ECG)",
-        "Ecocardiograma (ultrasonido del corazón)",
-        "Prueba de presión arterial de 24 horas",
-        "Espirometría y pruebas de función pulmonar"
+        "Consulta médica general",
+        "Chequeos preventivos",
+        "Tratamiento de enfermedades comunes",
+        "Referencia a especialistas"
       ],
-      image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80"
+      image: "/images/medicinaGeneral.png"
     },
     {
       id: 1,
-      title: "Cardiología",
-      description: "Brindamos atención integral del corazón con tecnología avanzada y especialistas experimentados.",
+      title: "Salud Preventiva",
+      description: "Enfoque en la prevención de enfermedades y promoción de hábitos saludables.",
       services: [
-        "Cateterismo cardíaco",
-        "Angioplastia y colocación de stent",
-        "Monitoreo del ritmo cardíaco",
-        "Pruebas de esfuerzo"
+        "Chequeos médicos periódicos",
+        "Vacunación",
+        "Control de presión arterial",
+        "Orientación nutricional"
       ],
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=600&q=80"
+      image: "/images/saludPreventiva.png"
     },
     {
       id: 2,
-      title: "Neurología",
-      description: "Atendemos trastornos que afectan el cerebro, la médula espinal y los nervios.",
+      title: "Pediatría",
+      description: "Atención integral de la salud de niños y adolescentes.",
       services: [
-        "EEG (Electroencefalograma)",
-        "EMG (Electromiografía)",
-        "Estudios de conducción nerviosa",
-        "Estudios del sueño"
+        "Control de crecimiento y desarrollo",
+        "Vacunación infantil",
+        "Atención de enfermedades infantiles",
+        "Orientación a padres"
       ],
-      image: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&w=600&q=80"
+      image: "/images/pedriatria.png"
     },
     {
       id: 3,
-      title: "Pediatría",
-      description: "Cuidamos la salud y el bienestar de los niños desde la infancia hasta la adolescencia.",
+      title: "Cirugía Menor",
+      description: "Procedimientos quirúrgicos ambulatorios de baja complejidad.",
       services: [
-        "Controles de crecimiento y vacunas",
-        "Evaluaciones del desarrollo",
-        "Tratamiento de enfermedades infantiles",
-        "Apoyo y educación a padres"
+        "Extracción de lunares",
+        "Suturas de heridas menores",
+        "Extracción de uñas",
+        "Drenaje de abscesos"
       ],
-      image: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&w=600&q=80"
+      image: "/images/cirugiaMenor.png"
     },
     {
       id: 4,
       title: "Ginecología y Obstetricia",
-      description: "Cuidado integral de la salud femenina y acompañamiento durante el embarazo y parto.",
+      description: "Cuidado de la salud reproductiva femenina y atención durante el embarazo.",
       services: [
-        "Controles prenatales",
+        "Control prenatal",
         "Ultrasonidos obstétricos",
         "Planificación familiar",
-        "Atención en el parto"
+        "Atención de parto"
       ],
-      image: "https://images.unsplash.com/photo-1588776814546-44fd3a5e2f97?auto=format&fit=crop&w=600&q=80"
+      image: "/images/ginecologia.png"
     },
     {
       id: 5,
       title: "Dermatología",
-      description: "Prevención, diagnóstico y tratamiento de enfermedades de la piel, cabello y uñas.",
+      description: "Diagnóstico y tratamiento de enfermedades de la piel, cabello y uñas.",
       services: [
         "Tratamiento de acné",
-        "Cirugía menor de piel",
-        "Control de lunares y lesiones",
-        "Terapia para enfermedades crónicas de la piel"
+        "Revisión de lunares",
+        "Tratamiento de dermatitis",
+        "Cirugía menor de piel"
       ],
-      image: "https://images.unsplash.com/photo-1601597111158-2fce8563f8fc?auto=format&fit=crop&w=600&q=80"
+      image: "/images/dermatologia.png"
     },
     {
       id: 6,
-      title: "Traumatología y Ortopedia",
-      description: "Atendemos lesiones óseas, musculares y articulares para una rápida recuperación.",
+      title: "Exámenes e Imágenes",
+      description: "Estudios de diagnóstico por imágenes y pruebas de laboratorio.",
       services: [
-        "Tratamiento de fracturas",
-        "Cirugía ortopédica",
-        "Rehabilitación física",
-        "Prótesis y ortesis"
+        "Ultrasonidos",
+        "Rayos X",
+        "Exámenes de laboratorio",
+        "Electrocardiograma (ECG)"
       ],
-      image: "https://images.unsplash.com/photo-1620218596978-d48b893475c1?auto=format&fit=crop&w=600&q=80"
+      image: "/images/examenes.png"
     },
     {
       id: 7,
-      title: "Oncología",
-      description: "Diagnóstico y tratamiento integral para pacientes con cáncer con un enfoque humano y especializado.",
+      title: "Atención de Emergencias",
+      description: "Atención médica inmediata para situaciones urgentes.",
       services: [
-        "Quimioterapia",
-        "Radioterapia",
-        "Cirugía oncológica",
-        "Cuidados paliativos"
+        "Atención de urgencias",
+        "Estabilización de pacientes",
+        "Curaciones rápidas",
+        "Referencia a hospitalización"
       ],
-      image: "https://images.unsplash.com/photo-1576765607924-3f7b6a4f3f3b?auto=format&fit=crop&w=600&q=80"
+      image: "/images/emergencias.png"
     }
   ];
+
 
   return (
     <section className="departments-section">
@@ -117,7 +118,7 @@ const Departments = () => {
           {/* Miniaturas en fila horizontal con scroll */}
           <div className="department-thumbnails">
             {departments.map((dept) => (
-              <div 
+              <div
                 key={dept.id}
                 className={`department-thumbnail ${activeDepartment === dept.id ? 'active' : ''}`}
                 onClick={() => setActiveDepartment(dept.id)}
@@ -131,17 +132,17 @@ const Departments = () => {
           {/* Contenido dinámico debajo */}
           {activeDepartment !== null && (
             <div className="department-content">
-              <button 
+              <button
                 className="close-btn"
                 onClick={() => setActiveDepartment(null)}
                 aria-label="Cerrar detalle de departamento"
               >
                 ×
               </button>
-              
+
               <h4 className="department-title">{departments[activeDepartment].title}</h4>
               <p className="department-description">{departments[activeDepartment].description}</p>
-              
+
               <div className="department-services">
                 {departments[activeDepartment].services.map((service, index) => (
                   <div key={index} className="service-item">
@@ -150,7 +151,7 @@ const Departments = () => {
                   </div>
                 ))}
               </div>
-              
+
               <button className="know-more-btn">Ver más</button>
             </div>
           )}

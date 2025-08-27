@@ -16,7 +16,7 @@ const Contact = () => {
           </div>
           <h5 className="contact-title">Correo electrónico</h5>
           <p className="contact-text">
-            contacto@mediclinic.com <br /> citas@mediclinic.com
+            clinicamediclinic@gmail.com <br /> mediclinic@gmail.com
           </p>
         </div>
 
@@ -29,7 +29,7 @@ const Contact = () => {
           </div>
           <h5 className="contact-title">Teléfonos</h5>
           <p className="contact-text">
-            (300) 123 4343 <br /> (300) 457 8934
+            (+503) 2602 2020 <br /> (+503) 2223 6379
           </p>
         </div>
 
@@ -43,7 +43,7 @@ const Contact = () => {
           </div>
           <h5 className="contact-title">Ubicación</h5>
           <p className="contact-text">
-            Av. Salud #123 <br /> Ciudad Médica, España
+            Santa Ana <br /> San Salvador
           </p>
         </div>
 
@@ -57,7 +57,7 @@ const Contact = () => {
           </div>
           <h5 className="contact-title">Horarios</h5>
           <p className="contact-text">
-            Lunes a Viernes: 09:00 - 17:00 <br /> Sábado: 09:00 - 14:00
+            Lunes a Viernes: 07:00 - 17:00 <br /> Sábados y Domingos: 09:00 - 14:00 <br /> Emergencias: 24/7
           </p>
         </div>
       </div>
