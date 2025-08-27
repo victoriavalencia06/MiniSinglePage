@@ -4,24 +4,27 @@ import {
   addDoc,
   getDocs,
   query,
-  where
+  where,
+  doc
 } from "firebase/firestore";
 import { db } from "../dataServices";
+import { useNavigate } from "react-router-dom";
 
 export default function FormCitas() {
+  const navigate = useNavigate();
+
   const [pacienteId, setPacienteId] = useState("");
-  const [especialidadId, setEspecialidadId] = useState("");
+  const [especializacionId, setEspecializacionId] = useState("");
   const [doctorId, setDoctorId] = useState("");
   const [fechaHora, setFechaHora] = useState("");
   const [motivo, setMotivo] = useState("");
   const [estado, setEstado] = useState("pendiente");
 
-  // Datos de selects
   const [pacientes, setPacientes] = useState([]);
   const [especialidades, setEspecialidades] = useState([]);
   const [doctorAsignado, setDoctorAsignado] = useState(null);
+  const [buscandoDoctor, setBuscandoDoctor] = useState(false);
 
-  // Control modal paciente
   const [showPacienteForm, setShowPacienteForm] = useState(false);
   const [nuevoPaciente, setNuevoPaciente] = useState({
     nombre: "",
@@ -30,27 +33,22 @@ export default function FormCitas() {
     direccion: "",
   });
 
-  // Cargar pacientes y especialidades
+  // Fecha mínima en hora local (no UTC) para el input datetime-local
+  const nowLocalISO = (() => {
+    const now = new Date();
+    const tzOffsetMs = now.getTimezoneOffset() * 60000;
+    return new Date(Date.now() - tzOffsetMs).toISOString().slice(0, 16);
+  })();
+
+  // Cargar pacientes y especializaciones
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const pacienteSnapshot = await getDocs(collection(db, "Paciente"));
-        setPacientes(
-          pacienteSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
+        const pacienteSnap = await getDocs(collection(db, "Paciente"));
+        setPacientes(pacienteSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-        const especializacionSnapshot = await getDocs(
-          collection(db, "Especializacion")
-        );
-        setEspecialidades(
-          especializacionSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
+        const especSnap = await getDocs(collection(db, "Especializacion"));
+        setEspecialidades(especSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
       } catch (error) {
         console.error("Error cargando datos:", error);
       }
@@ -58,43 +56,94 @@ export default function FormCitas() {
     fetchData();
   }, []);
 
-  // Seleccionar especialidad → asignar doctor automáticamente
-  const handleEspecialidadChange = async (id) => {
-    setEspecialidadId(id);
-    if (!id) return setDoctorAsignado(null);
+  // Seleccionar especialización → asignar doctor automáticamente
+  const handleEspecializacionChange = async (id) => {
+    setEspecializacionId(id);
+    setDoctorAsignado(null);
+    setDoctorId("");
+    if (!id) return;
 
-    const q = query(
-      collection(db, "Doctores"),
-      where("especialidadId", "==", id)
-    );
-    const snapshot = await getDocs(q);
+    setBuscandoDoctor(true);
+    try {
+      const doctoresCol = collection(db, "Doctor");
 
-    if (!snapshot.empty) {
-      const doctor = snapshot.docs[0];
-      setDoctorAsignado({ id: doctor.id, ...doctor.data() });
-      setDoctorId(doctor.id);
-    } else {
+      // 1) Intento por 'especializacionId' (string)
+      let snap = await getDocs(query(doctoresCol, where("especializacionId", "==", id)));
+
+      // 2) Intento alterno por 'especialidadId' (string), por si el campo se guardó con ese nombre
+      if (snap.empty) {
+        snap = await getDocs(query(doctoresCol, where("especialidadId", "==", id)));
+      }
+
+      // 3) Intento por referencia: 'especializacionRef' === doc(db,'Especializacion', id)
+      if (snap.empty) {
+        const ref = doc(db, "Especializacion", id);
+        snap = await getDocs(query(doctoresCol, where("especializacionRef", "==", ref)));
+      }
+
+      // 4) Fallback: traer todos y filtrar en memoria (por si hay espacios u otras claves)
+      let docMatch = snap.docs[0];
+      if (!docMatch) {
+        const all = await getDocs(doctoresCol);
+        docMatch = all.docs.find((d) => {
+          const data = d.data();
+          const a = (data.especializacionId || data.especialidadId || "").trim();
+          return a === id;
+        });
+      }
+
+      if (docMatch) {
+        const data = docMatch.data();
+        setDoctorAsignado({ id: docMatch.id, ...data });
+        setDoctorId(docMatch.id);
+        console.log("Doctor asignado:", docMatch.id, data);
+      } else {
+        setDoctorAsignado(null);
+        setDoctorId("");
+        console.warn("No se encontró doctor para especialización:", id);
+      }
+    } catch (error) {
+      console.error("Error al buscar doctor:", error);
       setDoctorAsignado(null);
       setDoctorId("");
+    } finally {
+      setBuscandoDoctor(false);
     }
   };
 
   // Guardar cita
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!pacienteId) {
+      alert("Selecciona un paciente.");
+      return;
+    }
+    if (!especializacionId) {
+      alert("Selecciona una especialización.");
+      return;
+    }
     if (!doctorId) {
-      alert("No hay doctor disponible ❌");
+      alert("No hay doctor disponible para esta especialización ❌");
       return;
     }
 
-    // Verificar disponibilidad
-    const q = query(
+    // Validar fecha futura (en local)
+    const selected = new Date(fechaHora);
+    const now = new Date();
+    if (selected < now) {
+      alert("No puedes seleccionar una fecha pasada ❌");
+      return;
+    }
+
+    // Verificar disponibilidad exacta fecha/hora con el mismo doctor
+    const qCita = query(
       collection(db, "Citas"),
       where("doctorId", "==", doctorId),
       where("fechaHora", "==", fechaHora)
     );
-    const snapshot = await getDocs(q);
-    if (!snapshot.empty) {
+    const snapCita = await getDocs(qCita);
+    if (!snapCita.empty) {
       alert("El doctor ya tiene una cita en esa fecha/hora ❌");
       return;
     }
@@ -102,19 +151,14 @@ export default function FormCitas() {
     await addDoc(collection(db, "Citas"), {
       pacienteId,
       doctorId,
+      especializacionId,
       fechaHora,
       motivo,
       estado,
     });
 
     alert("✅ Cita registrada correctamente");
-    setPacienteId("");
-    setEspecialidadId("");
-    setDoctorId("");
-    setDoctorAsignado(null);
-    setFechaHora("");
-    setMotivo("");
-    setEstado("pendiente");
+    navigate("/citas");
   };
 
   // Guardar paciente nuevo
@@ -124,11 +168,8 @@ export default function FormCitas() {
       const docRef = await addDoc(collection(db, "Paciente"), nuevoPaciente);
       alert("✅ Paciente añadido");
 
-      // actualizar lista
-      setPacientes([...pacientes, { id: docRef.id, ...nuevoPaciente }]);
+      setPacientes((prev) => [...prev, { id: docRef.id, ...nuevoPaciente }]);
       setPacienteId(docRef.id);
-
-      // reset y cerrar form
       setNuevoPaciente({ nombre: "", edad: "", telefono: "", direccion: "" });
       setShowPacienteForm(false);
     } catch (error) {
@@ -136,11 +177,10 @@ export default function FormCitas() {
     }
   };
 
+  const handleCancelarPrincipal = () => navigate("/citas");
+
   return (
-    <div
-      className="container d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
-    >
+    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
       <div className="card shadow p-4 w-100" style={{ maxWidth: "600px" }}>
         <form onSubmit={handleSubmit}>
           <h4 className="mb-4 text-center">Registrar nueva cita</h4>
@@ -157,9 +197,7 @@ export default function FormCitas() {
               >
                 <option value="">Seleccione un paciente</option>
                 {pacientes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}
-                  </option>
+                  <option key={p.id} value={p.id}>{p.nombre}</option>
                 ))}
               </select>
               <button
@@ -172,7 +210,7 @@ export default function FormCitas() {
             </div>
           </div>
 
-          {/* Formulario inline para nuevo paciente */}
+          {/* Mini-form paciente */}
           {showPacienteForm && (
             <div className="border rounded p-3 mb-3 bg-light">
               <h6>Añadir nuevo paciente</h6>
@@ -181,9 +219,7 @@ export default function FormCitas() {
                 className="form-control mb-2"
                 placeholder="Nombre"
                 value={nuevoPaciente.nombre}
-                onChange={(e) =>
-                  setNuevoPaciente({ ...nuevoPaciente, nombre: e.target.value })
-                }
+                onChange={(e) => setNuevoPaciente({ ...nuevoPaciente, nombre: e.target.value })}
                 required
               />
               <input
@@ -191,9 +227,7 @@ export default function FormCitas() {
                 className="form-control mb-2"
                 placeholder="Edad"
                 value={nuevoPaciente.edad}
-                onChange={(e) =>
-                  setNuevoPaciente({ ...nuevoPaciente, edad: e.target.value })
-                }
+                onChange={(e) => setNuevoPaciente({ ...nuevoPaciente, edad: e.target.value })}
                 required
               />
               <input
@@ -201,12 +235,7 @@ export default function FormCitas() {
                 className="form-control mb-2"
                 placeholder="Teléfono"
                 value={nuevoPaciente.telefono}
-                onChange={(e) =>
-                  setNuevoPaciente({
-                    ...nuevoPaciente,
-                    telefono: e.target.value,
-                  })
-                }
+                onChange={(e) => setNuevoPaciente({ ...nuevoPaciente, telefono: e.target.value })}
                 required
               />
               <input
@@ -214,45 +243,44 @@ export default function FormCitas() {
                 className="form-control mb-2"
                 placeholder="Dirección"
                 value={nuevoPaciente.direccion}
-                onChange={(e) =>
-                  setNuevoPaciente({
-                    ...nuevoPaciente,
-                    direccion: e.target.value,
-                  })
-                }
+                onChange={(e) => setNuevoPaciente({ ...nuevoPaciente, direccion: e.target.value })}
               />
-              <button
-                className="btn btn-success w-100"
-                onClick={handleAddPaciente}
-              >
-                Guardar paciente
-              </button>
+              <div className="d-flex gap-2">
+                <button className="btn btn-success w-50" onClick={handleAddPaciente}>Guardar paciente</button>
+                <button type="button" className="btn btn-secondary w-50" onClick={() => setShowPacienteForm(false)}>Cancelar</button>
+              </div>
             </div>
           )}
 
-          {/* Especialidad */}
+          {/* Especialización */}
           <div className="mb-3">
-            <label className="form-label">Especialidad</label>
+            <label className="form-label">Especialización</label>
             <select
               className="form-select"
-              value={especialidadId}
-              onChange={(e) => handleEspecialidadChange(e.target.value)}
+              value={especializacionId}
+              onChange={(e) => handleEspecializacionChange(e.target.value)}
               required
             >
-              <option value="">Seleccione una especialidad</option>
+              <option value="">Seleccione una especialización</option>
               {especialidades.map((esp) => (
-                <option key={esp.id} value={esp.id}>
-                  {esp.nombre}
-                </option>
+                <option key={esp.id} value={esp.id}>{esp.nombre}</option>
               ))}
             </select>
           </div>
 
           {/* Doctor asignado */}
-          {doctorAsignado && (
+          {buscandoDoctor && (
+            <div className="alert alert-secondary">Buscando doctor asignado…</div>
+          )}
+
+          {doctorAsignado && !buscandoDoctor && (
             <div className="alert alert-info">
               <strong>Doctor asignado:</strong> {doctorAsignado.nombre}
             </div>
+          )}
+
+          {!doctorAsignado && especializacionId && !buscandoDoctor && (
+            <div className="text-danger mb-3">No hay doctor disponible para esta especialización</div>
           )}
 
           {/* Fecha y hora */}
@@ -262,6 +290,7 @@ export default function FormCitas() {
               type="datetime-local"
               className="form-control"
               value={fechaHora}
+              min={nowLocalISO}
               onChange={(e) => setFechaHora(e.target.value)}
               required
             />
@@ -276,26 +305,25 @@ export default function FormCitas() {
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               required
-            ></textarea>
+            />
           </div>
 
           {/* Estado */}
           <div className="mb-3">
             <label className="form-label">Estado</label>
-            <select
-              className="form-select"
-              value={estado}
-              onChange={(e) => setEstado(e.target.value)}
-            >
+            <select className="form-select" value={estado} onChange={(e) => setEstado(e.target.value)}>
               <option value="pendiente">Pendiente</option>
               <option value="confirmada">Confirmada</option>
+              <option value="reprogramada">Reprogramada</option>
               <option value="cancelada">Cancelada</option>
+              <option value="atendida">Atendida</option>
             </select>
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Guardar Cita
-          </button>
+          <div className="d-flex gap-2">
+            <button type="submit" className="btn btn-primary w-50" disabled={!doctorId}>Guardar Cita</button>
+            <button type="button" className="btn btn-secondary w-50" onClick={handleCancelarPrincipal}>Cancelar</button>
+          </div>
         </form>
       </div>
     </div>

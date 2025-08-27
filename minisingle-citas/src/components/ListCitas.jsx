@@ -15,21 +15,21 @@ export default function ListCitas() {
 
           // Traer datos del paciente
           let pacienteNombre = "Desconocido";
-          if (citaData.PacienteId) {
-            const pacienteRef = doc(db, "Paciente", citaData.PacienteId);
+          if (citaData.pacienteId) {
+            const pacienteRef = doc(db, "Paciente", citaData.pacienteId);
             const pacienteSnap = await getDoc(pacienteRef);
             if (pacienteSnap.exists()) {
-              pacienteNombre = pacienteSnap.data().Nombre;
+              pacienteNombre = pacienteSnap.data().nombre;
             }
           }
 
           // Traer datos del doctor
           let doctorNombre = "Desconocido";
-          if (citaData.DoctorId) {
-            const doctorRef = doc(db, "Doctor", citaData.DoctorId);
+          if (citaData.doctorId) {
+            const doctorRef = doc(db, "Doctor", citaData.doctorId);
             const doctorSnap = await getDoc(doctorRef);
             if (doctorSnap.exists()) {
-              doctorNombre = doctorSnap.data().Nombre;
+              doctorNombre = doctorSnap.data().nombre;
             }
           }
 
@@ -42,11 +42,37 @@ export default function ListCitas() {
         })
       );
 
+      // Ordenar citas: más recientes primero
+      data.sort((a, b) => {
+        const fechaA = a.fechaHora?.seconds || 0;
+        const fechaB = b.fechaHora?.seconds || 0;
+        return fechaB - fechaA; // descendente
+      });
+
       setCitas(data);
     };
 
     fetchCitas();
   }, []);
+
+  // color segun el estado de la cita
+  const getBadgeClass = (estado) => {
+  switch (estado?.toLowerCase()) {
+    case "pendiente":
+      return "bg-warning text-dark"; // Amarillo
+    case "confirmada":
+      return "bg-success"; // Verde
+    case "reprogramada":
+      return "bg-info text-dark"; // Celeste
+    case "cancelada":
+      return "bg-danger"; // Rojo
+    case "atendida":
+      return "bg-primary"; // Azul
+    default:
+      return "bg-secondary"; // Gris si algo falla
+  }
+};
+
 
   return (
     <div className="container my-4">
@@ -62,12 +88,14 @@ export default function ListCitas() {
                 <p>Doctor: {cita.doctorNombre}</p>
                 <p>
                   Fecha y Hora:{" "}
-                  {cita.FechaHora
-                    ? new Date(cita.FechaHora.seconds * 1000).toLocaleString()
+                  {cita.fechaHora
+                    ? new Date(cita.fechaHora.seconds * 1000).toLocaleString()
                     : "Sin fecha"}
                 </p>
-                <p>Motivo: {cita.Motivo}</p>
-                <span className="badge bg-info">{cita.Estado}</span>
+                <p>Motivo: {cita.motivo}</p>
+                <span className={`badge ${getBadgeClass(cita.estado)}`}>
+                  {cita.estado}
+                </span>
               </div>
             </div>
           ))}
