@@ -1,10 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg bg-white shadow-sm">
       <div className="container">
-        <a className="navbar-brand" href="#">MediClinic</a>
+        <Link className="navbar-brand" to="/">MediClinic</Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -17,25 +18,24 @@ const Header = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
-          <ul className="navbar-nav mb-2 mb-lg-0">
+        <div className="collapse navbar-collapse justify-content-between" id="navbarNav">
+          <ul className="navbar-nav mx-auto mb-2 mb-lg-0">
             <li className="nav-item mx-2">
-              <a className="nav-link active" href="#">Inicio</a>
+              <Link className="nav-link" to="/">Inicio</Link>
             </li>
             <li className="nav-item mx-2">
-              <a className="nav-link" href="#">Servicios</a>
+              <Link className="nav-link" to="/servicios">Servicios</Link>
             </li>
             <li className="nav-item mx-2">
-              <a className="nav-link" href="#">Contactanos</a>
+              <Link className="nav-link" to="/contactanos">Contactanos</Link>
             </li>
             <li className="nav-item mx-2">
-              <a className="nav-link" href="#">Sobre Nosotros</a>
+              <Link className="nav-link" to="/sobre-nosotros">Sobre Nosotros</Link>
+            </li>
+            <li className="nav-item mx-2">
+              <Link className="nav-link" to="/citas">Citas</Link>
             </li>
           </ul>
-        </div>
-
-        <div className="d-flex">
-          <button className="btn btn-primary">Agenda tu cita con nosotros</button>
         </div>
       </div>
     </nav>

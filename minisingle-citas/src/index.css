@@ -61,19 +61,19 @@ body {
   margin-right: auto;
 }
 
-/* Home Info */
-.home-info {
+/* Contact Info */
+.contact-info {
   margin-top: 3rem;
   margin-bottom: 5rem;
   padding-left: 0; 
   padding-right: 0;
 }
 
-.info-item {
+.contact-item {
   text-align: center;
 }
 
-.info-icon {
+.contact-icon {
   font-size: 1.8rem;
   background-color: #d4e9f9;
   color: #7cc5e7;
@@ -86,14 +86,21 @@ body {
   border-radius: 50%;
 }
 
-.info-title {
+.contact-title {
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 0.3rem;
   color: #3a6670;
 }
 
-.info-text {
+.contact-titles {
+  font-weight: 700;
+  font-size: 28px;
+  color: #3a6670;
+  margin-bottom: 0.5rem;
+}
+
+.contact-text {
   font-size: 0.9rem;
   color: #6f8d97;
   line-height: 1.4;
@@ -346,8 +353,8 @@ body {
 .footer-container {
   font-size: 0.85rem;
   color: var(--text-secondary);
-  padding: 3rem 1rem 2rem;
-  background-color: var(--bg-light);
+  padding: 2rem 1rem 2rem;
+  background-color: #cce0f3;
 }
 
 .footer-sections {
@@ -398,7 +405,7 @@ body {
 }
 
 .logo-dot {
-  background-color: var(--blue-primary);
+  background-color: #acc3e2;
   color: white;
   border-radius: 50%;
   width: 24px;
@@ -419,6 +426,11 @@ body {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .navbar-nav {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .about-section {
     padding: 3rem 0;
   }
